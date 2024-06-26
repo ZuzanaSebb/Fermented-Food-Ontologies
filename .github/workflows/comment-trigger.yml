@@ -45,7 +45,7 @@ jobs:
               const fs = require('fs');
               const path = require('path');
               
-              const ontologyPath = path.join(process.env.GITHUB_WORKSPACE, 'ontology.json');
+              const ontologyPath = path.join(process.env.GITHUB_WORKSPACE, 'fermented_food_ontology.json');
               let ontology = {};
               
               // Check if the ontology file exists
