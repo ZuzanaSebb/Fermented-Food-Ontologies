@@ -30,22 +30,14 @@ jobs:
           echo "Commenter is a member of the organization."
         fi
         
-    - name: Process Comment
-      if: contains(github.event.comment.body, '/approved ontology string:')
-      id: process-comment
-      run: |
-        COMMENT_BODY=$(jq -r .comment.body "$GITHUB_EVENT_PATH")
-        ONTOLOGY_STRING=$(echo "$COMMENT_BODY" | grep -oP '(?<=/approved ontology string:)[^\s]+')
-        echo "::set-output name=ontology_string::$ONTOLOGY_STRING"
-
     - name: Parse comment and update JSON
       id: parse-comment
       run: |
           COMMENT_BODY=$(jq -r .comment.body "$GITHUB_EVENT_PATH")
           COMMENTER_LOGIN=$(jq -r .comment.user.login "$GITHUB_EVENT_PATH")
           
-          # Parse the ontology string from the comment
-          if [[ $COMMENT_BODY =~ \/approved\sontology\sstring:([a-zA-Z0-9-]+) ]]; then
+          # Extract ontology string using regex
+          if [[ "$COMMENT_BODY" =~ /approved\ ontology\ string:([a-zA-Z0-9-]+) ]]; then
             ONTOLOGY_STRING=${BASH_REMATCH[1]}
             
             # Use Node.js to manipulate JSON
@@ -58,19 +50,26 @@ jobs:
               
               // Check if the ontology file exists
               if (fs.existsSync(ontologyPath)) {
-                // Read the ontology file
                 ontology = JSON.parse(fs.readFileSync(ontologyPath, 'utf8'));
               } else {
                 console.error('ontology.json file not found.');
                 process.exit(1);
               }
               
-              // Define a function to add levels to the JSON object
+              // Function to add levels to the JSON object
               function addLevels(obj, levels) {
                 let current = obj;
-                for (let level of levels) {
-                  if (!current[level]) {
-                    current[level] = {};
+                for (let i = 0; i < levels.length; i++) {
+                  const level = levels[i];
+                  if (i === levels.length - 1) {
+                    // Last level, make it an empty array or object as per your requirement
+                    if (!current[level]) {
+                      current[level] = [""];
+                    }
+                  } else {
+                    if (!current[level]) {
+                      current[level] = {};
+                    }
                   }
                   current = current[level];
                 }
@@ -80,15 +79,14 @@ jobs:
               const levels = process.env.ONTOLOGY_STRING.split('-');
               
               // Add or update the entry in the ontology JSON
-              let current = ontology;
-              addLevels(current, levels);
+              addLevels(ontology, levels);
               
               // Write back the updated ontology to file
               fs.writeFileSync(ontologyPath, JSON.stringify(ontology, null, 2));
             "
             
-            # Export ONTOLOGY_STRING for subsequent step
-            echo "ONTOLOGY_STRING=$ONTOLOGY_STRING" >> $GITHUB_ENV
+            # Set the ONTOLOGY_STRING as output for the next step
+            echo "::set-output name=ONTOLOGY_STRING::$ONTOLOGY_STRING"
             
           else
             echo "Comment format incorrect. Please use '/approved ontology string:level1-level2-level3'."
