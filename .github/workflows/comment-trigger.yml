@@ -35,7 +35,7 @@ jobs:
       run: |
           COMMENT_BODY=$(jq -r .comment.body "$GITHUB_EVENT_PATH")
           COMMENTER_LOGIN=$(jq -r .comment.user.login "$GITHUB_EVENT_PATH")
-          
+
           # Extract ontology string using regex
           if [[ "$COMMENT_BODY" =~ /approved\ ontology\ string:([a-zA-Z0-9-]+) ]]; then
             ONTOLOGY_STRING=${BASH_REMATCH[1]}
@@ -47,14 +47,6 @@ jobs:
               
               const ontologyPath = path.join(process.env.GITHUB_WORKSPACE, 'fermented_food_ontology.json');
               let ontology = {};
-              
-              // Check if the ontology file exists
-              if (fs.existsSync(ontologyPath)) {
-                ontology = JSON.parse(fs.readFileSync(ontologyPath, 'utf8'));
-              } else {
-                console.error('ontology.json file not found.');
-                process.exit(1);
-              }
               
               // Function to add levels to the JSON object
               function addLevels(obj, levels) {
@@ -75,19 +67,32 @@ jobs:
                 }
               }
               
-              // Split the ontology string into levels
-              const levels = process.env.ONTOLOGY_STRING.split('-');
-              
-              // Add or update the entry in the ontology JSON
-              addLevels(ontology, levels);
-              
-              // Write back the updated ontology to file
-              fs.writeFileSync(ontologyPath, JSON.stringify(ontology, null, 2));
-            "
+              try {
+                // Check if the ontology file exists
+                if (fs.existsSync(ontologyPath)) {
+                  const data = fs.readFileSync(ontologyPath, 'utf8');
+                  ontology = JSON.parse(data);
+                } else {
+                  console.error('fermented_food_ontology.json file not found.');
+                  process.exit(1);
+                }
+                
+                // Split the ontology string into levels
+                const levels = process.env.ONTOLOGY_STRING.split('-');
+                
+                // Add or update the entry in the ontology JSON
+                addLevels(ontology, levels);
+                
+                // Write back the updated ontology to file
+                fs.writeFileSync(ontologyPath, JSON.stringify(ontology, null, 2));
+              } catch (error) {
+                console.error('Error processing JSON:', error);
+                process.exit(1);
+              }
+            " ONTOLOGY_STRING="$ONTOLOGY_STRING"
             
             # Set the ONTOLOGY_STRING as output for the next step
             echo "::set-output name=ONTOLOGY_STRING::$ONTOLOGY_STRING"
-            
           else
             echo "Comment format incorrect. Please use '/approved ontology string:level1-level2-level3'."
             exit 1
