@@ -30,8 +30,8 @@ jobs:
           echo "Commenter is a member of the organization."
         fi
         
-          - name: Install dependencies
-        run: npm install
+    - name: Install dependencies
+      run: npm install
 
     - name: Debug JSON Content
       run: cat fermented_food_ontology.json
