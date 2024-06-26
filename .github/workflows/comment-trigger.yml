@@ -30,104 +30,40 @@ jobs:
           echo "Commenter is a member of the organization."
         fi
         
-    - name: Parse comment and update JSON
-      id: parse-comment
-      run: |
-          COMMENT_BODY=$(jq -r .comment.body "$GITHUB_EVENT_PATH")
-          COMMENTER_LOGIN=$(jq -r .comment.user.login "$GITHUB_EVENT_PATH")
+          - name: Install dependencies
+        run: npm install
 
-          # Extract ontology string using regex
-          if [[ "$COMMENT_BODY" =~ /approved\ ontology\ string:([a-zA-Z0-9-]+) ]]; then
-            ONTOLOGY_STRING=${BASH_REMATCH[1]}
-            
-            # Use Node.js to manipulate JSON
-            node -e "
-              const fs = require('fs');
-              const path = require('path');
-              
-              const ontologyPath = path.join(process.env.GITHUB_WORKSPACE, 'fermented_food_ontology.json');
-              let ontology = {};
-              
-              // Function to add levels to the JSON object
-              function addLevels(obj, levels) {
-                let current = obj;
-                for (let i = 0; i < levels.length; i++) {
-                  const level = levels[i];
-                  if (i === levels.length - 1) {
-                    // Last level, make it an empty array or object as per your requirement
-                    if (!current[level]) {
-                      current[level] = [""];
-                    }
-                  } else {
-                    if (!current[level]) {
-                      current[level] = {};
-                    }
-                  }
-                  current = current[level];
-                }
-              }
-              
-              try {
-                // Check if the ontology file exists
-                if (fs.existsSync(ontologyPath)) {
-                  const data = fs.readFileSync(ontologyPath, 'utf8');
-                  ontology = JSON.parse(data);
-                } else {
-                  console.error('fermented_food_ontology.json file not found.');
-                  process.exit(1);
-                }
-                
-                // Split the ontology string into levels
-                const levels = process.env.ONTOLOGY_STRING.split('-');
-                
-                // Add or update the entry in the ontology JSON
-                addLevels(ontology, levels);
-                
-                // Write back the updated ontology to file
-                fs.writeFileSync(ontologyPath, JSON.stringify(ontology, null, 2));
-              } catch (error) {
-                console.error('Error processing JSON:', error);
-                process.exit(1);
-              }
-            " ONTOLOGY_STRING="$ONTOLOGY_STRING"
-            
-            # Set the ONTOLOGY_STRING as output for the next step
-            echo "::set-output name=ONTOLOGY_STRING::$ONTOLOGY_STRING"
-          else
-            echo "Comment format incorrect. Please use '/approved ontology string:level1-level2-level3'."
-            exit 1
-          fi
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Debug JSON Content
+      run: cat fermented_food_ontology.json
 
-    - name: Create pull request
-      if: ${{ steps.parse-comment.outputs.ONTOLOGY_STRING != '' }}
+    - name: Process JSON
       env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ONTOLOGY_STRING: ${{ steps.parse-comment.outputs.ONTOLOGY_STRING }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
       run: |
-          if [ "${{ github.event_name }}" != "issue_comment" ]; then
-            echo "Not an issue comment event, skipping pull request creation."
-            exit 78
-          fi
-          
-          # Check if the commenter is authorized to create a pull request
-          COMMENTER_LOGIN=$(jq -r .comment.user.login "$GITHUB_EVENT_PATH")
-          if [ "$COMMENTER_LOGIN" != "authorized_user_login" ]; then
-            echo "Only authorized users can create a pull request."
-            exit 1
-          fi
-          
-          # Create a branch and commit the updated JSON file
-          git checkout -b update-ontology
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git add ontology.json
-          git commit -m "Update ontology.json with $ONTOLOGY_STRING"
-          git push origin update-ontology
-          
-          # Create a pull request
-          hub pull-request -m "Update ontology.json with $ONTOLOGY_STRING" -b main
-    
-             
-         
+          const fs = require('fs');
+          const path = require('path');
+
+          try {
+            const ontologyPath = path.join(process.env.GITHUB_WORKSPACE, 'fermented_food_ontology.json');
+            const ontologyData = fs.readFileSync(ontologyPath, 'utf-8');
+            const ontology = JSON.parse(ontologyData);
+
+            // Debug output
+            console.log('Ontology JSON:', ontology);
+          } catch (error) {
+            console.error('Error processing JSON:', error);
+            process.exit(1);
+          }
+
+          const commentBody = process.env.COMMENT_BODY;
+          const commentRegex = /^\/approved ontology string:([a-zA-Z]+)-([a-zA-Z]+)-([a-zA-Z]+)$/;
+
+          const match = commentBody.match(commentRegex);
+          if (!match) {
+            console.error('Comment format incorrect. Please use \'/approved ontology string:level1-level2-level3\'.');
+            process.exit(1);
+          }
+
+          const [, level1, level2, level3] = match;
+
+          console.log('Levels:', { level1, level2, level3 });
