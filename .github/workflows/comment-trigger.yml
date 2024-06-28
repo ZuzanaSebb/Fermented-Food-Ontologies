@@ -60,7 +60,16 @@ jobs:
           JSON_FILE_PATH: ${{ github.workspace }}/fermented_food_ontology.json  
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
- 
+    - name: Create Pull Request
+      if: steps.process-comment.outputs.ontology_string
+      uses: peter-evans/create-pull-request@v4
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update ontology JSON file with new entry: ${{ steps.process-comment.outputs.ontology_string }}"
+          branch: update-ontology-${{ steps.process-comment.outputs.ontology_string }}
+          title: "Update ontology JSON file with new entry: ${{ steps.process-comment.outputs.ontology_string }}"
+          body: "This PR updates the ontology JSON file with a new entry."
+          base: main
 
     
       
