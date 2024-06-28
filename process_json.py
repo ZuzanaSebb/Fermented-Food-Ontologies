@@ -2,10 +2,10 @@ import os
 import json
 
 # Path to the JSON file
-ontology_path = 'fermented_food_ontology.json'
+ontology_path = os.getenv('JSON_FILE_PATH')
+
 
 try:
-    # Read the JSON file
     with open(ontology_path, 'r') as f:
         ontology = json.load(f)
 except FileNotFoundError:
@@ -16,13 +16,13 @@ except json.JSONDecodeError as e:
     exit(1)
 
 # Get the comment body from environment variables
-comment_body = os.getenv('COMMENT_BODY') 
-print(comment_body)
+ontology_string = os.getenv('ONTOLOGY_STRING')
+print(ontology_string)
 # Define the regex pattern to match the comment format
 import re
 
-comment_regex = r'^/approved ontology string:([a-zA-Z]+)-([a-zA-Z]+)-([a-zA-Z]+)$'
-match = re.match(comment_regex, comment_body)
+comment_regex = r'^([a-zA-Z]+)-([a-zA-Z]+)-([a-zA-Z]+)$'
+match = re.match(comment_regex, ontology_string)
 
 if not match:
     print('Comment format incorrect. Please use \'/approved ontology string:level1-level2-level3\'.')
