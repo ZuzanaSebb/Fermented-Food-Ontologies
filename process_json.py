@@ -16,8 +16,8 @@ except json.JSONDecodeError as e:
     exit(1)
 
 # Get the comment body from environment variables
-comment_body = os.getenv('COMMENT_BODY')
-
+comment_body = os.getenv('COMMENT_BODY') 
+print(comment_body)
 # Define the regex pattern to match the comment format
 import re
 
