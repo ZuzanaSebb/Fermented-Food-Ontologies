@@ -38,7 +38,17 @@ jobs:
           ONTOLOGY_STRING=$(echo "$COMMENT_BODY" | grep -oP '(?<=/approved ontology string:)[^\s]+')
           echo "Ontology string: $ONTOLOGY_STRING"
           echo "ontology_string=$ONTOLOGY_STRING" >> $GITHUB_ENV
-
+    
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+          python-version: '3.x' 
+    
+    - name: Execute Python script
+      run: |
+          python3 process_json.py
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     
       
