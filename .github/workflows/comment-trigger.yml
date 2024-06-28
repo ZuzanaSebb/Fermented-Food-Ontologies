@@ -51,33 +51,23 @@ jobs:
           python3 process_json.py
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b update-ontology-${{ steps.process-comment.outputs.ontology_string }}
+          
+          BRANCH_NAME="update-ontology-${{ steps.process-comment.outputs.ontology_string }}"
+          git checkout -b $BRANCH_NAME
           git add ${{ github.workspace }}/fermented_food_ontology.json
-          git commit -m "Update ontology JSON file."
-          git push origin update-ontology-${{ steps.process-comment.outputs.ontology_string }}
+          git commit -m "Update ontology JSON file with new entry: ${{ steps.process-comment.outputs.ontology_string }}"
+          git push origin $BRANCH_NAME
+
+          python3 create_pull_request.py "$GITHUB_TOKEN" "$BRANCH_NAME" "$JSON_FILE_PATH" "$ONTOLOGY_STRING"
 
       env:
           ONTOLOGY_STRING: ${{ steps.process-comment.outputs.ontology_string }}
           JSON_FILE_PATH: ${{ github.workspace }}/fermented_food_ontology.json  
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: create PR
-      uses: peter-evans/create-pull-request@v6
-      with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update ontology JSON file with new entry: ${{ steps.process-comment.outputs.ontology_string }}"
-          branch: update-ontology-${{ steps.process-comment.outputs.ontology_string }}
-          title: "Update ontology JSON file with new entry"
-          body: "This PR updates the ontology JSON file with a new entry."
-          base: main
-      
       
 
       
 
-    
-      
-
-
-          
+        
     
