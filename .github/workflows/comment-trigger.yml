@@ -45,7 +45,7 @@ jobs:
       with:
           python-version: '3.x' 
     
-    - name: Execute Python script and commit changes
+    - name: Execute Python script, commit changes
       if: steps.process-comment.outputs.ontology_string
       run: |
           python3 process_json.py
@@ -59,17 +59,12 @@ jobs:
           ONTOLOGY_STRING: ${{ steps.process-comment.outputs.ontology_string }}
           JSON_FILE_PATH: ${{ github.workspace }}/fermented_food_ontology.json  
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Create Pull Request
-      if: steps.process-comment.outputs.ontology_string
-      uses: peter-evans/create-pull-request@v4
-      with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update ontology JSON file with new entry: ${{ steps.process-comment.outputs.ontology_string }}"
-          branch: update-ontology-${{ steps.process-comment.outputs.ontology_string }}
-          title: "Update ontology JSON file with new entry: ${{ steps.process-comment.outputs.ontology_string }}"
-          body: "This PR updates the ontology JSON file with a new entry."
-          base: main
+
+    - name: create PR
+      uses: peter-evans/create-pull-request@v6
+      
+
+      
 
     
       
