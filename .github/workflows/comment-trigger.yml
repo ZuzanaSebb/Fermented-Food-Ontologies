@@ -29,41 +29,19 @@ jobs:
         else
           echo "Commenter is a member of the organization."
         fi
-        
-    - name: Install dependencies
-      run: npm install
-
-    - name: Debug JSON Content
-      run: cat fermented_food_ontology.json
-
-    - name: Process JSON
-      env:
-          COMMENT_BODY: ${{ github.event.comment.body }}
+    
+    - name: Process Comment
+      id: process-comment
+      if: contains(github.event.comment.body, '/approved ontology string:')
       run: |
-          const fs = require('fs');
-          const path = require('path');
+          COMMENT_BODY=$(jq -r .comment.body "$GITHUB_EVENT_PATH")
+          ONTOLOGY_STRING=$(echo "$COMMENT_BODY" | grep -oP '(?<=/approved ontology string:)[^\s]+')
+          echo "::set-output name=ontology_string::$ONTOLOGY_STRING"
 
-          try {
-            const ontologyPath = path.join(process.env.GITHUB_WORKSPACE, 'fermented_food_ontology.json');
-            const ontologyData = fs.readFileSync(ontologyPath, 'utf-8');
-            const ontology = JSON.parse(ontologyData);
 
-            // Debug output
-            console.log('Ontology JSON:', ontology);
-          } catch (error) {
-            console.error('Error processing JSON:', error);
-            process.exit(1);
-          }
+    
+      
 
-          const commentBody = process.env.COMMENT_BODY;
-          const commentRegex = /^\/approved ontology string:([a-zA-Z]+)-([a-zA-Z]+)-([a-zA-Z]+)$/;
 
-          const match = commentBody.match(commentRegex);
-          if (!match) {
-            console.error('Comment format incorrect. Please use \'/approved ontology string:level1-level2-level3\'.');
-            process.exit(1);
-          }
-
-          const [, level1, level2, level3] = match;
-
-          console.log('Levels:', { level1, level2, level3 });
+          
+    
