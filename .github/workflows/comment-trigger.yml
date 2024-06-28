@@ -45,10 +45,13 @@ jobs:
           python-version: '3.x' 
     
     - name: Execute Python script
+      if: steps.process-comment.outputs.ontology_string
       run: |
           python3 process_json.py
       env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ONTOLOGY_STRING: ${{ steps.process-comment.outputs.ontology_string }}
+          JSON_FILE_PATH: ${{ github.workspace }}/fermented_food_ontology.json  
+
 
     
       
