@@ -53,7 +53,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b update-ontology
           git add ${{ github.workspace }}/fermented_food_ontology.json
-          git commit -m "Update ontology JSON file.
+          git commit -m "Update ontology JSON file."
           git push origin update-ontology
       env:
           ONTOLOGY_STRING: ${{ steps.process-comment.outputs.ontology_string }}
