@@ -51,10 +51,10 @@ jobs:
           python3 process_json.py
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b update-ontology
+          git checkout -b update-ontology-${{ steps.process-comment.outputs.ontology_string }}
           git add ${{ github.workspace }}/fermented_food_ontology.json
           git commit -m "Update ontology JSON file."
-          git push origin update-ontology
+          git push origin update-ontology-${{ steps.process-comment.outputs.ontology_string }}
       env:
           ONTOLOGY_STRING: ${{ steps.process-comment.outputs.ontology_string }}
           JSON_FILE_PATH: ${{ github.workspace }}/fermented_food_ontology.json  
