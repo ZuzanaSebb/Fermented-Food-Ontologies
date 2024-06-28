@@ -36,7 +36,8 @@ jobs:
       run: |
           COMMENT_BODY=$(jq -r .comment.body "$GITHUB_EVENT_PATH")
           ONTOLOGY_STRING=$(echo "$COMMENT_BODY" | grep -oP '(?<=/approved ontology string:)[^\s]+')
-          echo "name=ontology_string" >> $ONTOLOGY_STRING 
+          echo "Ontology string: $ONTOLOGY_STRING"
+          echo "ontology_string=$ONTOLOGY_STRING" >> $GITHUB_ENV
 
 
     
