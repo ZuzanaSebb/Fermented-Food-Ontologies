@@ -2,7 +2,7 @@ import os
 import json
 
 # Path to the JSON file
-ontology_path = os.path.join(os.getenv('GITHUB_WORKSPACE'), 'fermented_food_ontology.json')
+ontology_path = 'fermented_food_ontology.json'
 
 try:
     # Read the JSON file
