@@ -56,6 +56,7 @@ jobs:
           git checkout -b $BRANCH_NAME
           git add ${{ github.workspace }}/fermented_food_ontology.json
           git commit -m "Update ontology JSON file with new entry: ${{ steps.process-comment.outputs.ontology_string }}"
+          git push origin update-ontology-${{ steps.process-comment.outputs.ontology_string }}
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
 
@@ -64,13 +65,11 @@ jobs:
           JSON_FILE_PATH: ${{ github.workspace }}/fermented_food_ontology.json  
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v4
-      with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update ontology JSON file with new entry: ${{ steps.process-comment.outputs.ontology_string }}"
-          branch: ${{ env.BRANCH_NAME }}
-          base: main
+
+    - name: create pull request
+      run: gh pr create -B main -H update-ontology-${{ steps.process-comment.outputs.ontology_string }} --title 'Merge update-ontology-${{ steps.process-comment.outputs.ontology_string }} into main' --body 'Created by Github action'
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
 
         
