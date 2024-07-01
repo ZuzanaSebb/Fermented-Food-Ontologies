@@ -1,9 +1,7 @@
 ---
 name: Ontology request 
 about: Create a new ontology entry 
-title: ''
 labels: request
-assignees: ''
 
 ---
 **New ontology**
