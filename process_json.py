@@ -14,11 +14,11 @@ except json.JSONDecodeError as e:
     exit(1)
 
 ontology_string = os.getenv('ONTOLOGY_STRING')
-comment_regex = r'^([a-zA-Z]+)-([a-zA-Z]+)-([a-zA-Z]+)$'
+comment_regex = r'^([^-]+)-([^-]+)-([^-]+)$'
 match = re.match(comment_regex, ontology_string)
 
 if not match:
-    print('Comment format incorrect. Please use \'/approved ontology string:level1-level2-level3\'.')
+    print('Comment format incorrect. Please use \'/approved:level1-level2-level3\'.')
     exit(1)
 
 level1, level2, level3 = match.groups()
