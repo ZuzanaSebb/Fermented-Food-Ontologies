@@ -48,7 +48,7 @@ jobs:
     - name: Execute Python script, commit changes
       if: steps.process-comment.outputs.ontology_string
       run: |
-          python3 process_json.py
+          python3 /.github/process_json.py
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
